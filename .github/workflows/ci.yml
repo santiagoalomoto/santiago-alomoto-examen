@@ -24,7 +24,7 @@ jobs:
       REPO_NAME: santiagoalomoto/santiago-alomoto-examen
 
     steps:
-      # 1️⃣ Checkout del código
+      # 1️⃣ Checkout
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -43,20 +43,20 @@ jobs:
       - name: Run tests
         run: npm test
 
-      # 5️⃣ Build de la app (si aplica)
+      # 5️⃣ Build app
       - name: Build app
         run: npm run build --if-present
 
-      # 6️⃣ Login en GitHub Container Registry
+      # 6️⃣ Login GHCR
       - name: Login to GHCR
         run: echo "${{ env.GHCR_PAT }}" | docker login ghcr.io -u santiagoalomoto --password-stdin
 
-      # 7️⃣ Construir imagen Docker
+      # 7️⃣ Build Docker
       - name: Docker Build
         run: |
           docker build -t alomoto-carriel-examen:1.0.5 .
 
-      # 8️⃣ Tag y Push al GHCR
+      # 8️⃣ Tag & Push GHCR
       - name: Tag & Push Image to GHCR
         run: |
           docker tag alomoto-carriel-examen:1.0.5 $IMAGE:1.0.5
@@ -65,30 +65,27 @@ jobs:
           docker push $IMAGE:1.0.5
           docker push $IMAGE:latest
 
-      # 8.1️⃣ Hacer el paquete público y vincularlo al repositorio
+      # 8.1️⃣ Make public + link repo
       - name: Make Package Public and Link to Repository
         run: |
           echo "🔧 Configurando visibilidad del paquete..."
 
-          # Hacer el paquete público
           curl -s -X PATCH \
           -H "Accept: application/vnd.github+json" \
-          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Authorization: Bearer ${{ env.GHCR_PAT }}" \
           https://api.github.com/user/packages/container/${PACKAGE_NAME} \
           -d '{"visibility":"public"}' || echo "⚠️ Puede que ya sea público"
 
-          # Vincular paquete al repositorio
           echo "🔗 Vinculando paquete al repositorio..."
           curl -s -X PUT \
           -H "Accept: application/vnd.github+json" \
-          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Authorization: Bearer ${{ env.GHCR_PAT }}" \
           https://api.github.com/user/packages/container/${PACKAGE_NAME}/versions/latest \
           -d "{\"repository\":\"${REPO_NAME}\"}" || echo "⚠️ Ya puede estar vinculado"
 
-          echo "✅ Configuración completada"
           echo "📦 GHCR: https://github.com/${REPO_NAME}/pkgs/container/${PACKAGE_NAME}"
 
-      # 9️⃣ Copiar stack.yml al VPS
+      # 9️⃣ Copiar stack.yml
       - name: Copiar stack.yml al VPS (SCP)
         uses: appleboy/scp-action@v1
         with:
@@ -99,7 +96,7 @@ jobs:
           source: "stack.yml"
           target: "/home/${{ env.VPS_USER }}/deploy"
 
-      # 9.1️⃣ Verificar copia de stack.yml en VPS
+      # 9.1️⃣ Verificar copia
       - name: Verificar copia de stack.yml en VPS
         uses: appleboy/ssh-action@v1
         with:
@@ -111,11 +108,11 @@ jobs:
             if [ -f ~/deploy/stack.yml ]; then
               echo "✅ stack.yml copiado correctamente"
             else
-              echo "❌ Error: stack.yml no encontrado"
+              echo "❌ ERROR: stack.yml no encontrado"
               exit 1
             fi
 
-      # 🔟 Deploy en el VPS via SSH
+      # 🔟 Deploy
       - name: Deploy on VPS via SSH
         uses: appleboy/ssh-action@v1
         with:
@@ -128,17 +125,13 @@ jobs:
 
             cd ~/deploy
 
-            # Login GHCR desde el VPS
             echo "${{ env.GHCR_PAT }}" | docker login ghcr.io -u santiagoalomoto --password-stdin
 
-            # Pull nueva imagen
             docker pull ghcr.io/santiagoalomoto/alomoto-carriel-examen:latest
 
-            # Eliminar stack anterior
             docker stack rm carriel || true
             sleep 10
 
-            # Desplegar stack limpio
             docker stack deploy --with-registry-auth -c stack.yml carriel
 
             docker service ls
