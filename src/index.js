@@ -15,7 +15,7 @@ app.get("/", (req, res) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alexis verificando los cambios, que si vale</title>
+    <title>santiagoalomoto verificando los cambios</title>
     <style>
         * {
             margin: 0;
@@ -102,7 +102,7 @@ app.get("/", (req, res) => {
 <body>
     <div class="container">
         <div class="icon">🚀</div>
-        <h1>alexis nuevos cambios</h1>
+        <h1>santiagoalomoto nuevos cambios</h1>
         <p>Aplicación Node.js desplegada exitosamente usando Express, Docker y CI/CD</p>
 
         <div class="tech-stack">

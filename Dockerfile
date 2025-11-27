@@ -1,19 +1,19 @@
-# Imagen base
+# Imagen base oficial de Node
 FROM node:22
 
-# Crea el directorio de la app
+# Directorio de la aplicación
 WORKDIR /app
 
-# Copia archivos de dependencias primero (para aprovechar caché de Docker)
+# Copia archivos de dependencias primero
 COPY package*.json ./
 
 # Instala dependencias
 RUN npm install
 
-# Copia el resto del código fuente
+# Copia el resto del proyecto
 COPY . .
 
-# Expone el puerto (usa el mismo que en tu app)
+# Expone el puerto de tu app (asegúrate de que tu server use este)
 EXPOSE 3000
 
 # Comando de inicio

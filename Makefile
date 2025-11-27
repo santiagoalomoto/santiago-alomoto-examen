@@ -1,6 +1,6 @@
 # Nombre del proyecto e imagen
-APP_NAME=proyecto-alexis
-GHCR_USER=adqvelez-cloud
+APP_NAME=alomoto-carriel-examen
+GHCR_USER=santiagoalomoto
 IMAGE=ghcr.io/$(GHCR_USER)/$(APP_NAME)
 
 # ============================
