@@ -1,28 +1,28 @@
 version: "3.8"
 
 services:
-  quinche:
-    image: ghcr.io/adqvelez-cloud/velez-alexis-examen:latest
+  carriel:
+    image: ghcr.io/santiagoalomoto/alomoto-carriel-examen:latest
     deploy:
       replicas: 1
       labels:
         - "traefik.enable=true"
 
         # Enrutamiento HTTP → HTTPS
-        - "traefik.http.routers.quinche.entrypoints=http"
-        - "traefik.http.routers.quinche.rule=Host(`quinche.byronrm.com`)"
-        - "traefik.http.middlewares.quinche-https-redirect.redirectscheme.scheme=https"
-        - "traefik.http.routers.quinche.middlewares=quinche-https-redirect"
+        - "traefik.http.routers.carriel.entrypoints=http"
+        - "traefik.http.routers.carriel.rule=Host(`carriel.byronrm.com`)"
+        - "traefik.http.middlewares.carriel-https-redirect.redirectscheme.scheme=https"
+        - "traefik.http.routers.carriel.middlewares=carriel-https-redirect"
 
         # HTTPS con certificado automático Let's Encrypt
-        - "traefik.http.routers.quinche-secure.entrypoints=https"
-        - "traefik.http.routers.quinche-secure.rule=Host(`quinche.byronrm.com`)"
-        - "traefik.http.routers.quinche-secure.tls=true"
-        - "traefik.http.routers.quinche-secure.tls.certresolver=http"
-        - "traefik.http.routers.quinche-secure.service=quinche"
+        - "traefik.http.routers.carriel-secure.entrypoints=https"
+        - "traefik.http.routers.carriel-secure.rule=Host(`carriel.byronrm.com`)"
+        - "traefik.http.routers.carriel-secure.tls=true"
+        - "traefik.http.routers.carriel-secure.tls.certresolver=http"
+        - "traefik.http.routers.carriel-secure.service=carriel"
 
         # Puerto interno donde corre tu app (Node.js → 3000)
-        - "traefik.http.services.quinche.loadbalancer.server.port=3000"
+        - "traefik.http.services.carriel.loadbalancer.server.port=3000"
 
         # Red pública del traefik
         - "traefik.docker.network=traefik-public"
