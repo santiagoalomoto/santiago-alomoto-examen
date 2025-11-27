@@ -83,6 +83,7 @@ jobs:
           username: ${{ env.VPS_USER }}
           password: ${{ env.VPS_PASSWORD }}
           port: ${{ env.VPS_SSH_PORT }}
+          proxy_port: 0          # <-- FIX IMPORTANTE
           source: "stack.yml"
           target: "/home/${{ env.VPS_USER }}/deploy"
 
@@ -93,6 +94,7 @@ jobs:
           username: ${{ env.VPS_USER }}
           password: ${{ env.VPS_PASSWORD }}
           port: ${{ env.VPS_SSH_PORT }}
+          proxy_port: 0          # <-- FIX IMPORTANTE
           script: |
             if [ -f ~/deploy/stack.yml ]; then
               echo "✅ stack.yml copiado correctamente"
@@ -108,6 +110,7 @@ jobs:
           username: ${{ env.VPS_USER }}
           password: ${{ env.VPS_PASSWORD }}
           port: ${{ env.VPS_SSH_PORT }}
+          proxy_port: 0          # <-- FIX IMPORTANTE
           script: |
             echo "🚀 Desplegando nueva versión..."
 
