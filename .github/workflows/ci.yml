@@ -24,39 +24,31 @@ jobs:
       REPO_NAME: santiagoalomoto/santiago-alomoto-examen
 
     steps:
-      # 1️⃣ Checkout
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2️⃣ Configurar Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
 
-      # 3️⃣ Instalar dependencias
       - name: Install dependencies
         run: npm install
 
-      # 4️⃣ Ejecutar tests
       - name: Run tests
         run: npm test
 
-      # 5️⃣ Build app
       - name: Build app
         run: npm run build --if-present
 
-      # 6️⃣ Login GHCR
       - name: Login to GHCR
         run: echo "${{ env.GHCR_PAT }}" | docker login ghcr.io -u santiagoalomoto --password-stdin
 
-      # 7️⃣ Build Docker
       - name: Docker Build
         run: |
           docker build -t alomoto-carriel-examen:1.0.5 .
 
-      # 8️⃣ Tag & Push GHCR
       - name: Tag & Push Image to GHCR
         run: |
           docker tag alomoto-carriel-examen:1.0.5 $IMAGE:1.0.5
@@ -65,7 +57,6 @@ jobs:
           docker push $IMAGE:1.0.5
           docker push $IMAGE:latest
 
-      # 8.1️⃣ Make public + link repo
       - name: Make Package Public and Link to Repository
         run: |
           echo "🔧 Configurando visibilidad del paquete..."
@@ -85,25 +76,23 @@ jobs:
 
           echo "📦 GHCR: https://github.com/${REPO_NAME}/pkgs/container/${PACKAGE_NAME}"
 
-      # 9️⃣ Copiar stack.yml
       - name: Copiar stack.yml al VPS (SCP)
         uses: appleboy/scp-action@v1
         with:
           host: ${{ env.VPS_HOST }}
           username: ${{ env.VPS_USER }}
           password: ${{ env.VPS_PASSWORD }}
-          port: 1001
+          port: ${{ env.VPS_SSH_PORT }}
           source: "stack.yml"
           target: "/home/${{ env.VPS_USER }}/deploy"
 
-      # 9.1️⃣ Verificar copia
       - name: Verificar copia de stack.yml en VPS
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ env.VPS_HOST }}
           username: ${{ env.VPS_USER }}
           password: ${{ env.VPS_PASSWORD }}
-          port: 1001
+          port: ${{ env.VPS_SSH_PORT }}
           script: |
             if [ -f ~/deploy/stack.yml ]; then
               echo "✅ stack.yml copiado correctamente"
@@ -112,14 +101,13 @@ jobs:
               exit 1
             fi
 
-      # 🔟 Deploy
       - name: Deploy on VPS via SSH
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ env.VPS_HOST }}
           username: ${{ env.VPS_USER }}
           password: ${{ env.VPS_PASSWORD }}
-          port: 1001
+          port: ${{ env.VPS_SSH_PORT }}
           script: |
             echo "🚀 Desplegando nueva versión..."
 
