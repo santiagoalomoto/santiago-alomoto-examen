@@ -18,7 +18,7 @@ jobs:
       VPS_HOST: ${{ secrets.VPS_HOST }}
       VPS_USER: ${{ secrets.VPS_USER }}
       VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}
-      VPS_SSH_PORT: ${{ secrets.VPS_SSH_PORT }}   # <-- CORREGIDO
+      VPS_SSH_PORT: ${{ secrets.VPS_SSH_PORT }}
       IMAGE: ghcr.io/santiagoalomoto/alomoto-carriel-examen
       PACKAGE_NAME: alomoto-carriel-examen
       REPO_NAME: santiagoalomoto/santiago-alomoto-examen
@@ -53,26 +53,24 @@ jobs:
         run: |
           docker tag alomoto-carriel-examen:1.0.5 $IMAGE:1.0.5
           docker tag alomoto-carriel-examen:1.0.5 $IMAGE:latest
-
           docker push $IMAGE:1.0.5
           docker push $IMAGE:latest
 
       - name: Make Package Public and Link to Repository
         run: |
           echo "🔧 Configurando visibilidad del paquete..."
-
           curl -s -X PATCH \
-          -H "Accept: application/vnd.github+json" \
-          -H "Authorization: Bearer ${{ env.GHCR_PAT }}" \
-          https://api.github.com/user/packages/container/${PACKAGE_NAME} \
-          -d '{"visibility":"public"}' || echo "⚠️ Puede que ya sea público"
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ env.GHCR_PAT }}" \
+            https://api.github.com/user/packages/container/${PACKAGE_NAME} \
+            -d '{"visibility":"public"}' || echo "⚠️ Puede que ya sea público"
 
           echo "🔗 Vinculando paquete al repositorio..."
           curl -s -X PUT \
-          -H "Accept: application/vnd.github+json" \
-          -H "Authorization: Bearer ${{ env.GHCR_PAT }}" \
-          https://api.github.com/user/packages/container/${PACKAGE_NAME}/versions/latest \
-          -d "{\"repository\":\"${REPO_NAME}\"}" || echo "⚠️ Ya puede estar vinculado"
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ env.GHCR_PAT }}" \
+            https://api.github.com/user/packages/container/${PACKAGE_NAME}/versions/latest \
+            -d "{\"repository\":\"${REPO_NAME}\"}" || echo "⚠️ Ya puede estar vinculado"
 
           echo "📦 GHCR: https://github.com/${REPO_NAME}/pkgs/container/${PACKAGE_NAME}"
 
@@ -82,7 +80,7 @@ jobs:
           host: ${{ env.VPS_HOST }}
           username: ${{ env.VPS_USER }}
           password: ${{ env.VPS_PASSWORD }}
-          port: ${{ env.VPS_SSH_PORT }}   # <-- CORREGIDO
+          port: ${{ env.VPS_SSH_PORT }}
           proxy_port: 0
           source: "stack.yml"
           target: "/home/${{ env.VPS_USER }}/deploy"
@@ -93,7 +91,7 @@ jobs:
           host: ${{ env.VPS_HOST }}
           username: ${{ env.VPS_USER }}
           password: ${{ env.VPS_PASSWORD }}
-          port: ${{ env.VPS_SSH_PORT }}   # <-- CORREGIDO
+          port: ${{ env.VPS_SSH_PORT }}
           proxy_port: 0
           script: |
             if [ -f ~/deploy/stack.yml ]; then
@@ -108,22 +106,16 @@ jobs:
         with:
           host: ${{ env.VPS_HOST }}
           username: ${{ env.VPS_USER }}
-          password: ${{ env.VPS_PASSWORD }}   # <-- CORREGIDO
-          port: ${{ env.VPS_SSH_PORT }}       # <-- CORREGIDO
+          password: ${{ env.VPS_PASSWORD }}
+          port: ${{ env.VPS_SSH_PORT }}
           proxy_port: 0
           script: |
             echo "🚀 Desplegando nueva versión..."
-
             cd ~/deploy
-
             echo "${{ env.GHCR_PAT }}" | docker login ghcr.io -u santiagoalomoto --password-stdin
-
-            docker pull ghcr.io/santiagoalomoto/alomoto-carriel-examen:latest
-
+            docker pull $IMAGE:latest
             docker stack rm carriel || true
             sleep 10
-
             docker stack deploy --with-registry-auth -c stack.yml carriel
-
             docker service ls
             docker stack ps carriel
